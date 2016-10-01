@@ -5,3 +5,19 @@
 *** www.ifbma.org
 *** bikesyndikat-shop.com
 *** www.bikesyndikat-shop.com
+** Host names / port forwards
+*** planlibre.de
+*** plan-libre.de
+** let's encrypt
+*** Installation
+#+BEGIN_SRC
+git clone https://github.com/certbot/certbot
+cd certbot
+#+END_SRC
+*** Configuration
+#+BEGIN_SRC
+/etc/init.d/apache2 stop
+# kill the port forward ssh
+nohup ssh -f -p 24 -R :80:localhost:80 -R :443:localhost:443 root@planlibre.de 'echo test;while true;do sleep 3;done;' &
+./certbot-auto certonly -a standalone -d ifbma.org -d www.ifbma.org -d dev.ifbma.org -d planlibre.de -d plan-libre.de
+#+END_SRC
