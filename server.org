@@ -1,0 +1,7 @@
+* Debian Linux server
+** Host names / A records
+*** ifbma.org
+*** dev.ifbma.org
+*** www.ifbma.org
+*** bikesyndikat-shop.com
+*** www.bikesyndikat-shop.com
