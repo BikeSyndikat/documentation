@@ -21,3 +21,31 @@ cd certbot
 nohup ssh -f -p 24 -R :80:localhost:80 -R :443:localhost:443 root@planlibre.de 'echo test;while true;do sleep 3;done;' &
 ./certbot-auto certonly -a standalone -d ifbma.org -d www.ifbma.org -d dev.ifbma.org -d planlibre.de -d plan-libre.de
 #+END_SRC
+*** Running
+**** Apache
+Add to each virtual host a 
+#+BEGIN_SRC
+NameVirtualHost *:443
+
+<VirtualHost *:80>
+  ServerName www.ifbma.org
+  ServerAlias ifbma.org
+  ServerAlias dev.ifbma.org
+  Redirect / https://ifbma.org/
+</VirtualHost>
+#+END_SRC
+and a 
+
+#+BEGIN_SRC
+SSLEngine on
+SSLCertificateFile      /etc/letsencrypt/live/ifbma.org/cert.pem
+SSLCertificateKeyFile   /etc/letsencrypt/live/ifbma.org/privkey.pem
+SSLCertificateChainFile /etc/letsencrypt/live/ifbma.org/fullchain.pem
+#SSLCARevocationPath /etc/apache2/ssl.crl/
+#SSLCARevocationFile /etc/apache2/ssl.crl/ca-bundle.crl
+SSLProtocol all -SSLv2 -SSLv3
+SSLCipherSuite ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA
+SSLOptions +StrictRequire
+SSLHonorCipherOrder on
+SSLCompression off
+#+END_SRC
