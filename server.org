@@ -87,3 +87,32 @@ jboss-cli.sh --connect <<<EOF
 EOF
 tail -f ${WILDFLYDIR}/standalone/log/server.log
 #+END_SRC
+**** openfire
+***** short version
+It is also possible to run this analogous to the wildfly procedure. Use
+that openssl conversion then.
+#+BEGIN_SRC
+keytool -delete -alias dev.ifbma.org -storepass changeit \
+ -keystore /etc/openfire/security/keystore
+keytool -importkeystore -srckeystore /home/wildfly/device-ip.pkcs12 \
+ -srcstoretype PKCS12 -keystore /etc/openfire/security/keystore
+service openfire restart
+#+END_SRC
+***** convert as full chain
+Different to wildfly, export the full chain, use the password used in
+openfire and as a name the jabber domain.
+#+BEGIN_SRC
+openssl pkcs12 -inkey /etc/letsencrypt/live/ifbma.org/privkey.pem \
+ -in /etc/letsencrypt/live/ifbma.org/fullchain.pem -export -name dev.ifbma.org \
+ -out /etc/openfire/fullchain.pkcs12 -passout pass:changeit
+#+END_SRC
+***** import from full chain
+#+BEGIN_SRC
+keytool -delete -alias dev.ifbma.org -storepass changeit \
+ -keystore /etc/openfire/security/keystore
+keytool -importkeystore -srckeystore /etc/openfire/fullchain.pkcs12 \
+ -srcstoretype PKCS12 -destkeystore /etc/openfire/security/keystore \
+ -deststorepass changeit -destkeypass changeit -srcstorepass changeit
+ -alias dev.ifbma.org
+service openfire restart
+#+END_SRC
