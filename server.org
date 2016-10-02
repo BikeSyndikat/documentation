@@ -49,3 +49,41 @@ SSLOptions +StrictRequire
 SSLHonorCipherOrder on
 SSLCompression off
 #+END_SRC
+**** wildfly
+***** Import into ~/home/wildfly/.keystore~
+There has to be a corresponing line in the server configuration, like
+the ssl/keystore one in:
+#+BEGIN_SRC
+             <security-realm name="ApplicationRealm">
+                <server-identities>
+                    <ssl>
+                        <keystore path=".keystore" relative-to="user.home" keystore-password="changeit" alias="s1as" key-password="changeit"/>
+                    </ssl>
+                </server-identities>
+                <authentication>
+                    <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
+                    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
+                </authentication>
+                <authorization>
+                    <properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
+                </authorization>
+            </security-realm>
+#+END_SRC
+***** convert
+#+BEGIN_SRC
+openssl pkcs12 -inkey /etc/letsencrypt/live/ifbma.org/privkey.pem \
+ -in /etc/letsencrypt/live/ifbma.org/cert.pem -export -name s1as \
+ -out /home/wildfly/device-ip.pkcs12
+#+END_SRC
+***** import
+#+BEGIN_SRC
+keytool -delete -alias s1as -keystore /home/wildfly/.keystore
+keytool -importkeystore -srckeystore /home/wildfly/device-ip.pkcs12 \
+ -srcstoretype PKCS12 -keystore /home/wildfly/.keystore
+
+su - wildfly
+jboss-cli.sh --connect <<<EOF
+:reload
+EOF
+tail -f ${WILDFLYDIR}/standalone/log/server.log
+#+END_SRC
