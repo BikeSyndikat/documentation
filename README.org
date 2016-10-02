@@ -1,0 +1,8 @@
+* documentation
+Document infrastructure tasks.
+* Disclaimer
+Please note that markdown files get exported by emacs org-mode usually
+and will be overwritten by a corresponding org file.
+* Description
+This contains all configuration descriptions made to get the project
+running. 
