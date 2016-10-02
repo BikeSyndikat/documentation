@@ -1,28 +1,29 @@
-* Debian Linux server
-** Host names / A records
-*** ifbma.org
-*** dev.ifbma.org
-*** www.ifbma.org
-*** bikesyndikat-shop.com
-*** www.bikesyndikat-shop.com
-** Host names / port forwards
-*** planlibre.de
-*** plan-libre.de
-** let's encrypt
-*** Installation
+* Info
+Debian Linux server
+* Host names / A records
+** ifbma.org
+** dev.ifbma.org
+** www.ifbma.org
+** bikesyndikat-shop.com
+** www.bikesyndikat-shop.com
+* Host names / port forwards
+** planlibre.de
+** plan-libre.de
+* let's encrypt
+** Installation
 #+BEGIN_SRC
 git clone https://github.com/certbot/certbot
 cd certbot
 #+END_SRC
-*** Configuration
+** Configuration
 #+BEGIN_SRC
 /etc/init.d/apache2 stop
 # kill the port forward ssh
 nohup ssh -f -p 24 -R :80:localhost:80 -R :443:localhost:443 root@planlibre.de 'echo test;while true;do sleep 3;done;' &
 ./certbot-auto certonly -a standalone -d ifbma.org -d www.ifbma.org -d dev.ifbma.org -d planlibre.de -d plan-libre.de
 #+END_SRC
-*** Running
-**** Apache
+** Running
+*** Apache
 Add to each virtual host a 
 #+BEGIN_SRC
 NameVirtualHost *:443
@@ -49,8 +50,8 @@ SSLOptions +StrictRequire
 SSLHonorCipherOrder on
 SSLCompression off
 #+END_SRC
-**** wildfly
-***** Import into ~/home/wildfly/.keystore~
+*** wildfly
+**** Import into ~/home/wildfly/.keystore~
 There has to be a corresponing line in the server configuration, like
 the ssl/keystore one in:
 #+BEGIN_SRC
@@ -69,13 +70,13 @@ the ssl/keystore one in:
                 </authorization>
             </security-realm>
 #+END_SRC
-***** convert
+**** convert
 #+BEGIN_SRC
 openssl pkcs12 -inkey /etc/letsencrypt/live/ifbma.org/privkey.pem \
  -in /etc/letsencrypt/live/ifbma.org/cert.pem -export -name s1as \
  -out /home/wildfly/device-ip.pkcs12
 #+END_SRC
-***** import
+**** import
 #+BEGIN_SRC
 keytool -delete -alias s1as -keystore /home/wildfly/.keystore
 keytool -importkeystore -srckeystore /home/wildfly/device-ip.pkcs12 \
@@ -87,8 +88,8 @@ jboss-cli.sh --connect <<<EOF
 EOF
 tail -f ${WILDFLYDIR}/standalone/log/server.log
 #+END_SRC
-**** openfire
-***** short version
+*** openfire
+**** short version
 It is also possible to run this analogous to the wildfly procedure. Use
 that openssl conversion then.
 #+BEGIN_SRC
@@ -98,7 +99,7 @@ keytool -importkeystore -srckeystore /home/wildfly/device-ip.pkcs12 \
  -srcstoretype PKCS12 -keystore /etc/openfire/security/keystore
 service openfire restart
 #+END_SRC
-***** convert as full chain
+**** convert as full chain
 Different to wildfly, export the full chain, use the password used in
 openfire and as a name the jabber domain.
 #+BEGIN_SRC
@@ -106,7 +107,7 @@ openssl pkcs12 -inkey /etc/letsencrypt/live/ifbma.org/privkey.pem \
  -in /etc/letsencrypt/live/ifbma.org/fullchain.pem -export -name dev.ifbma.org \
  -out /etc/openfire/fullchain.pkcs12 -passout pass:changeit
 #+END_SRC
-***** import from full chain
+**** import from full chain
 #+BEGIN_SRC
 keytool -delete -alias dev.ifbma.org -storepass changeit \
  -keystore /etc/openfire/security/keystore
